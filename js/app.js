@@ -325,6 +325,22 @@
     }
   });
 
+  /* The help modal documents "Ctrl/Cmd+C — Copy output (when focused
+     outside inputs)" as a shortcut, but it was never actually wired up.
+     Implemented as a plain listener (rather than WUS.registerShortcut,
+     whose dispatcher calls preventDefault() for any mod-combo shortcut
+     even while typing) so a normal text selection/copy inside the Count
+     field is never hijacked — this only fires when focus is outside any
+     input/textarea/select, matching the documented behavior. */
+  document.addEventListener('keydown', function (e) {
+    if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'c') return;
+    var tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
+    var typing = tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable);
+    if (typing) return;
+    e.preventDefault();
+    copyOutput();
+  });
+
   WUS.registerShortcut('mod+enter', function () { generate(); }, 'Generate text');
   WUS.registerShortcut('?', function () { openHelp(); }, 'Show shortcuts');
 
